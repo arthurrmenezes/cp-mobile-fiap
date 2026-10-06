@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "messages": {
+      "$conversationId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "$messageId": {
+          ".validate": "newData.child('senderId').val() === auth.uid"
+        }
+      }
+    }
+  }
+}

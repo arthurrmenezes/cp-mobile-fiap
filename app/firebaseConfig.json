@@ -1,0 +1,9 @@
+{
+  "apiKey": "AIzaSyA722CYU1575YY292nu78JrQYAUXdQp5P8",
+  "authDomain": "chat-firebase-fiap.firebaseapp.com",
+  "databaseURL": "https://chat-firebase-fiap-default-rtdb.firebaseio.com",
+  "projectId": "chat-firebase-fiap",
+  "storageBucket": "chat-firebase-fiap.firebasestorage.app",
+  "messagingSenderId": "101639250187",
+  "appId": "1:101639250187:web:0f0d4f24cd2a90cc06420e"
+}
