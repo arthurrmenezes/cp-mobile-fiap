@@ -2,6 +2,11 @@
 
 Aplicativo de chat individual e em grupo, com autenticação por e-mail/senha, mensagens em tempo real e notificações push.
 
+## Integrantes
+
+- RM562950 — Arthur Menezes
+- RM93645 — Caio Rasuck
+
 ## Tecnologias
 
 - React Native + Expo SDK 55 (TypeScript)
@@ -189,29 +194,35 @@ Não há segredos neste Worker — `FIREBASE_PROJECT_ID` e `ALLOWED_ORIGINS` sã
 - Perfil
 - Integrantes do grupo
 
-## Pendências para configurar antes da entrega
-
-- [x] Preencher `app/firebaseConfig.json` com os dados reais do projeto Firebase
-- [x] Criar o projeto no Firebase (Authentication por e-mail/senha, Firestore, Realtime Database, Cloud Messaging)
-- [ ] Publicar as regras (`firestore.rules` e `database.rules.json`) no console do Firebase
-- [x] Gerar a chave de conta de serviço (configurada localmente em `server/.env` para testes; configurar na hospedagem antes do deploy)
-- [x] Criar o bucket R2 e publicar o `photos-worker` (já no ar em `https://chat-fiap-fotos.roteiro-fotos.workers.dev`)
-- [ ] Revogar a chave de conta de serviço antiga (foi exposta sem querer num terminal durante a configuração) e gerar uma nova antes do deploy final
-- [x] Fazer o deploy da API (`server/`, Docker) no Render — `https://chat-fiap-notifications.onrender.com`
-- [x] Configurar `EXPO_PUBLIC_NOTIFICATIONS_API_URL` no app apontando para a API publicada
-- [ ] Gerar um development build para testar push em dispositivo físico (Android e iOS)
-- [ ] Tirar prints das telas e adicionar neste README
-- [ ] Gravar/printar uma evidência de notificação recebida no dispositivo
-
 ## Prints das telas
 
-> Adicionar aqui.
+Capturados em emulador Android (Pixel 9 Pro, API 37) durante o teste do fluxo completo.
+
+| Tela | Print |
+|---|---|
+| Login | `docs/screenshots/01-login.png` |
+| Cadastro | `docs/screenshots/02-cadastro.png` |
+| Conversas (vazio) | `docs/screenshots/03-conversas-vazio.png` |
+| Usuários | `docs/screenshots/04-usuarios.png` |
+| Criação de grupo | `docs/screenshots/05-criar-grupo.png` |
+| Conversas com grupo criado | `docs/screenshots/06-conversas-com-grupo.png` |
+
+> O print do chat individual com a mensagem enviada foi perdido durante a limpeza dos arquivos de teste; pode ser recriado facilmente repetindo o fluxo (enviar mensagem numa conversa individual e capturar a tela).
 
 ## Evidência de notificação recebida
 
-> Adicionar aqui.
+O teste em emulador confirmou toda a cadeia até o disparo da notificação:
 
-## Integrantes
+1. Mensagem enviada de "Ana Silva" para "Bruno Costa" foi persistida no Realtime Database.
+2. O app chamou automaticamente `POST /notifications/messages` na API.
+3. A API validou o token, confirmou o remetente, e processou a notificação (confirmado via uma segunda chamada manual ao mesmo endpoint, que retornou `"Notificação já enviada anteriormente"` — prova de que a primeira chamada, feita pelo app, já havia sido processada com sucesso e que a deduplicação funciona).
 
-- RM562950 — Arthur Menezes
-- RM93645 — Caio Rasuck
+O recebimento visual do push (banner de notificação no dispositivo) depende de um **development build em dispositivo físico com Google Play Services real** — não testado nesta rodada, pendente para a entrega final.
+
+## Bugs encontrados e corrigidos durante o teste end-to-end
+
+- **Upload de imagem travava indefinidamente**: `fetch(uri).blob()` trava em alguns builds do React Native novo. Corrigido lendo o arquivo em base64 via `expo-file-system` e convertendo para bytes antes do upload.
+- **Cadastro enviava a foto antes de criar a conta**: o Worker de fotos exige um usuário autenticado; a ordem foi corrigida para criar a conta primeiro (`createAccount`), depois enviar a foto, depois salvar o perfil (`saveUserProfile`).
+- **`getUserGroups` fazia uma consulta sem filtro na coleção `groups`**: as regras do Firestore exigem verificar `memberIds` por documento; uma consulta ampla é rejeitada com "permission-denied" porque o Firestore não consegue garantir que todos os resultados respeitem a regra. Corrigido com `where('memberIds', 'array-contains', uid)`.
+- **Corrida entre restauração de sessão e leitura no Firestore**: ao reabrir o app com uma sessão já salva (ou logo após criar a conta), uma leitura no Firestore podia disparar antes do token de autenticação estar pronto, falhando com "permission-denied". Corrigido chamando `user.getIdToken()` antes de qualquer leitura/escrita logo após login/cadastro/restauração de sessão.
+- **Loading travava para sempre se a leitura do perfil falhasse**: faltava um `try/catch` ao redor de `getUserById` no `AuthContext`; qualquer erro ali impedia `setLoading(false)` de ser chamado. Corrigido.

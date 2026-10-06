@@ -3,9 +3,11 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   runTransaction,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { ChatGroup, NotificationPolicy } from '../types/group';
@@ -42,10 +44,10 @@ export async function getGroupById(groupId: string): Promise<ChatGroup | null> {
 }
 
 export async function getUserGroups(uid: string): Promise<ChatGroup[]> {
-  const snap = await getDocs(collection(db, 'groups'));
-  return snap.docs
-    .map((d) => d.data() as ChatGroup)
-    .filter((g) => g.memberIds.includes(uid));
+  const snap = await getDocs(
+    query(collection(db, 'groups'), where('memberIds', 'array-contains', uid))
+  );
+  return snap.docs.map((d) => d.data() as ChatGroup);
 }
 
 export async function addMemberToGroup(groupId: string, memberId: string) {

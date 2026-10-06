@@ -11,6 +11,10 @@ import { ChatUser } from '../types/user';
 
 export async function createAccount(email: string, password: string): Promise<string> {
   const credential = await createUserWithEmailAndPassword(auth, email, password);
+  // Garante que o token de autenticação já está pronto antes de qualquer
+  // escrita no Firestore logo em seguida (evita "permission-denied" por
+  // uma corrida entre o login e a propagação do token).
+  await credential.user.getIdToken();
   return credential.user.uid;
 }
 
@@ -34,7 +38,8 @@ export async function saveUserProfile(
 }
 
 export async function loginUser(email: string, password: string) {
-  await signInWithEmailAndPassword(auth, email, password);
+  const credential = await signInWithEmailAndPassword(auth, email, password);
+  await credential.user.getIdToken();
 }
 
 export async function logoutUser() {

@@ -26,8 +26,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setFirebaseUser(user);
 
       if (user) {
-        const profile = await getUserById(user.uid);
-        setChatUser(profile);
+        try {
+          // Evita uma corrida entre a restauração da sessão (persistência via
+          // AsyncStorage) e a primeira leitura no Firestore logo em seguida.
+          await user.getIdToken();
+          const profile = await getUserById(user.uid);
+          setChatUser(profile);
+        } catch (err) {
+          setChatUser(null);
+        }
       } else {
         setChatUser(null);
       }
