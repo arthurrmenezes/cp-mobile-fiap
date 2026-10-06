@@ -118,10 +118,11 @@ docker run -p 8080:8080 --env-file .env.docker notifications-api
 
 ### URL pública da API
 
-> Preencher após o deploy:
-> `https://SUA-URL-AQUI.onrender.com`
+`https://chat-fiap-notifications.onrender.com`
 
 Para verificar que a API está no ar, acesse `GET /health`.
+
+> **Nota sobre o plano Free do Render:** a instância "dorme" após um período sem uso, e a primeira requisição depois disso pode levar ~50 segundos para responder (cold start). Vale abrir `/health` um pouco antes de testar o app ou apresentar para o professor, para a instância já estar "quente".
 
 ## Política de notificações
 
@@ -196,8 +197,8 @@ Não há segredos neste Worker — `FIREBASE_PROJECT_ID` e `ALLOWED_ORIGINS` sã
 - [x] Gerar a chave de conta de serviço (configurada localmente em `server/.env` para testes; configurar na hospedagem antes do deploy)
 - [x] Criar o bucket R2 e publicar o `photos-worker` (já no ar em `https://chat-fiap-fotos.roteiro-fotos.workers.dev`)
 - [ ] Revogar a chave de conta de serviço antiga (foi exposta sem querer num terminal durante a configuração) e gerar uma nova antes do deploy final
-- [ ] Fazer o deploy da API (`server/`, Docker) no Render (ou outro serviço com suporte a Docker) e colar a URL final neste README
-- [ ] Configurar `EXPO_PUBLIC_NOTIFICATIONS_API_URL` no app apontando para a API publicada
+- [x] Fazer o deploy da API (`server/`, Docker) no Render — `https://chat-fiap-notifications.onrender.com`
+- [x] Configurar `EXPO_PUBLIC_NOTIFICATIONS_API_URL` no app apontando para a API publicada
 - [ ] Gerar um development build para testar push em dispositivo físico (Android e iOS)
 - [ ] Tirar prints das telas e adicionar neste README
 - [ ] Gravar/printar uma evidência de notificação recebida no dispositivo
